@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  postgresql:
+    container_name: postgresql
+    build: ./postgresql
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgresql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
