@@ -11,15 +11,18 @@ unzip N03-170101_GML.zip
 shp2pgsql -I -W latin1 -s 4326 *.shp temp_prefectures | psql -U $POSTGRES_USER -d $POSTGRES_DB
 
 psql -U $POSTGRES_USER -d $POSTGRES_DB << EOF
-CREATE TABLE prefectures (id character varying NOT NULL, geometry geometry(MultiPolygon, 4326) NOT NULL);
+CREATE TABLE prefecture_shapes (code char(2) NOT NULL, geom geometry(MultiPolygon, 4326) NOT NULL);
 
-INSERT INTO prefectures (id, geometry)
-  SELECT id, geometry FROM (SELECT ST_Multi(ST_Union(geom)) AS geometry, n03_001 AS id FROM temp_prefectures GROUP BY n03_001) prefectures;
+INSERT INTO prefecture_shapes (code, geom)
+  SELECT code, geom FROM (
+    SELECT ST_Multi(ST_Union(geom)) AS geom, LEFT(n03_007, 2) AS code
+    FROM temp_prefectures
+    WHERE n03_007 IS NOT NULL
+    GROUP BY LEFT(n03_007, 2)
+  ) prefecture_shapes;
 
+DROP TABLE temp_prefectures;
 EOF
-# DROP TABLE temp_prefectures;
-
-
 popd
 
 rm -rf /tmp/work
